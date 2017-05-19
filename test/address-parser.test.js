@@ -1,4 +1,4 @@
-var addressParser = require("../src/address-parser"),
+var addressParser = require("../index"),
 	addresses = require("./fixtures/address-parser.fixture"),
 	assert = require("assert");
 
@@ -10,7 +10,7 @@ describe("Testing address parser", function(){
 			expected = test.expected,
 			actual = addressParser(raw);
 
-		assert.equal(actual, expected);
+		assert.deepEqual(actual, expected);
 	}
 
 	for(var d = 0; d < addresses.length; d++){

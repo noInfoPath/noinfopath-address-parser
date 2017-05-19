@@ -5,18 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test/address-parser.test.js",
-    "test-watch": "mocha test/address-parser.test.js --watch"
+    "test-watch": "mocha test/address-parser.test.js --watch --inspect"
   },
   "keywords": [
     "NoInfoPath",
     "Address",
     "Parser"
   ],
-  "author": "Interactive Multimedia Group, Inc.",
+  "author": "The NoInfoPath Group, LLC.",
   "license": "MIT",
   "devDependencies": {
     "assert": "^1.4.1",
-    "jasmine": "^2.6.0",
     "mocha": "^3.4.1"
   }
 }

@@ -1,5 +1,3 @@
-//address-parser.js
-
 function newLineParseCityStateZip(glo, parsedAddress) {
 
 	var cityStateZip = parsedAddress[parsedAddress.length - 1].trim().split(',');
@@ -49,12 +47,13 @@ function commaParseStateZip(glo, parsedAddress) {
 
 	glo.record.state = stateZip[0].substr(0, 2);
 	glo.record.zip = stateZip[1];
+
+	glo.completedLines++;
 }
 
 function commaParseCity(glo, parsedAddress) {
 	glo.record.city = parsedAddress[parsedAddress.length - 2].trim();
-
-	return record;
+	glo.completedLines++;
 }
 
 function commaParseAddress(glo, parsedAddress) {
@@ -65,32 +64,32 @@ function commaParseAddress(glo, parsedAddress) {
 		// If there is any remaining, there is another line before we get to city/state/zip and need to put that line as address2
 		if (remaining === 0) {
 			glo.record.address1 = line;
-			completedLines = completedLines + 1;
+			glo.completedLines = glo.completedLines + 1;
 		} else {
 			glo.record.address1 = line;
 			glo.record.address2 = parsedAddress[l + 1].trim();
-			completedLines = completedLines + 2;
+			glo.completedLines = glo.completedLines + 2;
 		}
 		break;
 	}
 }
 
 function commaParseName(glo, parsedAddress) {
-	var remainingLines = parsedAddress.length - completedLines;
-	switch (remainingLines) {
+	glo.remainingLines = parsedAddress.length - glo.completedLines;
+	switch (glo.remainingLines) {
 	case 0:
 		break;
 	case 1:
-		record.name1 = parsedAddress[0].trim();
+		glo.record.name1 = parsedAddress[0].trim();
 		break;
 	default:
-		record.name1 = parsedAddress[0].trim();
+		glo.record.name1 = parsedAddress[0].trim();
 		// treat all remaining lines as name2, so join remaining lines together separated by ','
 		var name2Array = [];
-		for (var rem = 1; rem < remainingLines; rem++) {
+		for (var rem = 1; rem < glo.remainingLines; rem++) {
 			name2Array.push(parsedAddress[rem].trim());
 		}
-		record.name2 = name2Array.join(", ");
+		glo.record.name2 = name2Array.join(", ");
 		break;
 	}
 	// if (remainingLines === 1){
