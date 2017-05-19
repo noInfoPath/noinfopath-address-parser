@@ -1,75 +1,81 @@
 //address-parser.js
 
-function newLineParseCityStateZip(line) {
+function newLineParseCityStateZip(glo, parsedAddress) {
 
-	var record = {}, cityStateZip = parsedAddress[parsedAddress.length - 1].trim().split(',');
+	var cityStateZip = parsedAddress[parsedAddress.length - 1].trim().split(',');
 	if (cityStateZip.length == 2) {
-		record.city = cityStateZip[0];
+		glo.record.city = cityStateZip[0];
 		var temp = cityStateZip[1].trim().split(' ');
-		record.state = temp[0].substr(0, 2);
-		record.zip = temp[1];
+		glo.record.state = temp[0].substr(0, 2);
+		glo.record.zip = temp[1];
 	} else {
-		record.city = cityStateZip[0].replace(',', '');
-		record.state = cityStateZip[1].substr(0, 2);
-		record.zip = cityStateZip[2];
+		glo.record.city = cityStateZip[0].replace(',', '');
+		glo.record.state = cityStateZip[1].substr(0, 2);
+		glo.record.zip = cityStateZip[2];
 	}
-	return record;
+	glo.completedLines++;
 }
 
-function newLineParseAddress(line) {
-	var rawAddress = parsedAddress[parsedAddress.length - 2].split(',');
+function newLineParseAddress(glo, parsedAddress) {
+	var rawAddress = parsedAddress[parsedAddress.length - 2].trim().split(',');
 	if (rawAddress.length == 1) {
-		record.address1 = rawAddress[0].trim();
+		glo.record.address1 = rawAddress[0].trim();
 	} else {
-		record.address1 = rawAddress[0].trim();
-		record.address2 = rawAddress[1].trim();
+		glo.record.address1 = rawAddress[0].trim();
+		glo.record.address2 = rawAddress[1].trim();
 	}
+	glo.completedLines++;
 }
 
-function newLineParseName(line) {
-	var remainingLength = parsedAddress.length - 2;
+function newLineParseName(glo, parsedAddress) {
+	var remainingLength = parsedAddress.length - glo.completedLines;
 	switch (remainingLength) {
 	case 0:
 		break;
 	case 1:
-		record.name1 = parsedAddress[0].trim();
+		glo.record.name1 = parsedAddress[0].trim();
 		break;
 	case 2:
-		record.name1 = parsedAddress[0].trim();
-		record.name2 = parsedAddress[1].trim();
+		glo.record.name1 = parsedAddress[0].trim();
+		glo.record.name2 = parsedAddress[1].trim();
 		break;
 	default:
 		break;
 	}
 }
 
-function commaParseCityStateZip(line) {
+function commaParseStateZip(glo, parsedAddress) {
 	var stateZip = parsedAddress[parsedAddress.length - 1].trim().split(' ');
-	record.state = stateZip[0].substr(0, 2);
-	record.zip = stateZip[1];
-	record.city = parsedAddress[parsedAddress.length - 2].trim();
-	completedLines = completedLines + 2;
+
+	glo.record.state = stateZip[0].substr(0, 2);
+	glo.record.zip = stateZip[1];
 }
 
-function commaParseAddress(line) {
+function commaParseCity(glo, parsedAddress) {
+	glo.record.city = parsedAddress[parsedAddress.length - 2].trim();
+
+	return record;
+}
+
+function commaParseAddress(glo, parsedAddress) {
 	for (var l = 0; l <= parsedAddress.length - 2; l++) {
 		var line = parsedAddress[l].trim();
 		if (!isNumber(line.substr(0, 1))) continue;
 		var remaining = (parsedAddress.length - 2) - (l + 1);
 		// If there is any remaining, there is another line before we get to city/state/zip and need to put that line as address2
 		if (remaining === 0) {
-			record.address1 = line;
+			glo.record.address1 = line;
 			completedLines = completedLines + 1;
 		} else {
-			record.address1 = line;
-			record.address2 = parsedAddress[l + 1].trim();
+			glo.record.address1 = line;
+			glo.record.address2 = parsedAddress[l + 1].trim();
 			completedLines = completedLines + 2;
 		}
 		break;
 	}
 }
 
-function commaParseName(line) {
+function commaParseName(glo, parsedAddress) {
 	var remainingLines = parsedAddress.length - completedLines;
 	switch (remainingLines) {
 	case 0:
@@ -104,37 +110,46 @@ function isNumber(i) {
 	return !Number.isNaN(Number(i)) && i !== null;
 }
 
-function parse() {
+function parse(input) {
 	try {
-		var record = {},
-			parsedAddress = address.trim().split('\n'),
-			completedLines = 0;
+		var glo = {},
+			parsedAddress = input.trim().split('\n');
 
+		glo.completedLines = 0;
+		glo.record = {};
+
+		// Test to see if the input is a new line separated address, if the length is < 2 assume it's a comma separated address.
 		if (parsedAddress.length < 2) {
+			// Comma separated address
 			parsedAddress = parsedAddress[0].trim().split(',');
+			// Test to see if input is < 2, if not, assume invalid input and return.
 			if (parsedAddress.length < 2) {
 				return;
 			}
+			// Test to see if the first line starts with a number, if so, assume no name.
 			if (isNumber(parsedAddress[0].trim().substr(0, 1))) {
-				commaParseCityStateZip();
-				commaParseAddress();
+				commaParseStateZip(glo, parsedAddress);
+				commaParseCity(glo, parsedAddress);
+				commaParseAddress(glo, parsedAddress);
 			} else {
-				commaParseCityStateZip();
-				commaParseAddress();
-				commaParseName();
+				commaParseStateZip(glo, parsedAddress);
+				commaParseCity(glo, parsedAddress);
+				commaParseAddress(glo, parsedAddress);
+				commaParseName(glo, parsedAddress);
 			}
-			return record;
 		} else {
-			if (isNumber(parsedAddress[0].trim())) {
-				newLineParseCityStateZip();
-				newLineParseAddress();
+			// New Line separated address
+			// Test to see if the first line starts with a number, if so, assume no name.
+			if (isNumber(parsedAddress[0].trim().substr(0, 1))) {
+				newLineParseCityStateZip(glo, parsedAddress);
+				newLineParseAddress(glo, parsedAddress);
 			} else {
-				newLineParseCityStateZip();
-				newLineParseAddress();
-				newLineParseName();
+				newLineParseCityStateZip(glo, parsedAddress);
+				newLineParseAddress(glo, parsedAddress);
+				newLineParseName(glo, parsedAddress);
 			}
-			return record;
 		}
+		return glo.record;
 	} catch (err) {
 		console.error(err);
 	}
