@@ -1,0 +1,20 @@
+{
+  "name": "noinfopath-address-parser",
+  "version": "1.0.0",
+  "description": "A NoInfoPath Address Parser module",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/address-parser.test.js",
+    "test-watch": "mocha test/address-parser.test.js --watch"
+  },
+  "keywords": [
+    "NoInfoPath",
+    "Address",
+    "Parser"
+  ],
+  "author": "Interactive Multimedia Group, Inc.",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^3.4.1"
+  }
+}
