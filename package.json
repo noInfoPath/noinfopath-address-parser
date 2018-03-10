@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A NoInfoPath Address Parser module",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noInfoPath/noinfopath-address-parser.git"
+  },	
   "scripts": {
     "test": "mocha test/address-parser.test.js",
     "test-watch": "mocha test/address-parser.test.js --watch --inspect"
